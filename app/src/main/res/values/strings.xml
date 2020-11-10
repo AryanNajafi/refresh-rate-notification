@@ -1,6 +1,6 @@
 <resources>
     <string name="app_name">Refresh Rate Notification</string>
 
-    <string name="stop_service">Turn Off</string>
+    <string name="stop_service">Turn off</string>
 
 </resources>

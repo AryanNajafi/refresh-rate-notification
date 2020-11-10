@@ -12,6 +12,7 @@ import kotlin.math.roundToInt
 
 const val NOTIFICATION_ID = 9000;
 const val CHANNEL_ID = "rr_channel"
+const val INTENT_EXTRA_NOTIFICATION_ACTION = "notification_action";
 
 class RefreshRateService : Service() {
 
@@ -34,32 +35,45 @@ class RefreshRateService : Service() {
             notificationManager.createNotificationChannel(notificationChannel)
         }
 
-        displayManager.registerDisplayListener(object : DisplayManager.DisplayListener {
-            override fun onDisplayAdded(p0: Int) {
-            }
-
-            override fun onDisplayChanged(displayId: Int) {
-                refreshRate = displayManager.getDisplay(displayId).refreshRate.roundToInt()
-                notificationManager.notify(NOTIFICATION_ID, makeNotification())
-            }
-
-            override fun onDisplayRemoved(p0: Int) {
-            }
-        }, null)
+        displayManager.registerDisplayListener(displayListener, null)
 
         startForeground(NOTIFICATION_ID, makeNotification())
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        return super.onStartCommand(intent, flags, startId)
+        val fromNotificationAction =
+                intent?.getBooleanExtra(INTENT_EXTRA_NOTIFICATION_ACTION, false)
+        if (fromNotificationAction!!) {
+            stopSelf()
+        }
+        return START_NOT_STICKY;
     }
 
     override fun onBind(p0: Intent?): IBinder? {
         return null
     }
 
+    override fun onDestroy() {
+        displayManager.unregisterDisplayListener(displayListener)
+        super.onDestroy()
+    }
+
+    private val displayListener = object : DisplayManager.DisplayListener {
+        override fun onDisplayAdded(p0: Int) {
+        }
+
+        override fun onDisplayChanged(displayId: Int) {
+            refreshRate = displayManager.getDisplay(displayId).refreshRate.roundToInt()
+            notificationManager.notify(NOTIFICATION_ID, makeNotification())
+        }
+
+        override fun onDisplayRemoved(p0: Int) {
+        }
+    }
+
     private fun makeNotification(): Notification {
         val serviceIntent = Intent(this, RefreshRateService::class.java)
+        serviceIntent.putExtra(INTENT_EXTRA_NOTIFICATION_ACTION, true);
 
         val servicePendingIntent = PendingIntent.getService(this,
                 0, serviceIntent, PendingIntent.FLAG_UPDATE_CURRENT)
