@@ -8,6 +8,7 @@ import android.os.Build
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import androidx.preference.PreferenceManager
 import kotlin.math.roundToInt
 
 const val NOTIFICATION_ID = 9000;
@@ -38,6 +39,9 @@ class RefreshRateService : Service() {
         displayManager.registerDisplayListener(displayListener, null)
 
         startForeground(NOTIFICATION_ID, makeNotification())
+
+        PreferenceManager.getDefaultSharedPreferences(this).edit()
+            .putBoolean(PREF_KEY_REFRESH_RATE, true).apply()
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -55,6 +59,8 @@ class RefreshRateService : Service() {
 
     override fun onDestroy() {
         displayManager.unregisterDisplayListener(displayListener)
+        PreferenceManager.getDefaultSharedPreferences(this).edit()
+            .putBoolean(PREF_KEY_REFRESH_RATE, false).apply()
         super.onDestroy()
     }
 
