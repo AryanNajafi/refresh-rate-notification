@@ -13,7 +13,6 @@ import kotlin.math.roundToInt
 
 const val NOTIFICATION_ID = 9000;
 const val CHANNEL_ID = "rr_channel"
-const val INTENT_EXTRA_NOTIFICATION_ACTION = "notification_action";
 
 class RefreshRateService : Service() {
 
@@ -45,9 +44,7 @@ class RefreshRateService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        val fromNotificationAction =
-                intent?.getBooleanExtra(INTENT_EXTRA_NOTIFICATION_ACTION, false)
-        if (fromNotificationAction!!) {
+        if (intent?.getBooleanExtra(INTENT_EXTRA_NOTIFICATION_ACTION, false)!!) {
             stopSelf()
         }
         return START_NOT_STICKY;
