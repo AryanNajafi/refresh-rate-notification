@@ -1,15 +1,18 @@
 package io.github.hertz
 
 import android.app.*
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.hardware.display.DisplayManager
 import android.os.Build
 import android.os.IBinder
+import android.service.quicksettings.TileService
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.preference.PreferenceManager
 import kotlin.math.roundToInt
+
 
 const val NOTIFICATION_ID = 9000;
 const val CHANNEL_ID = "rr_channel"
@@ -43,6 +46,9 @@ class RefreshRateService : Service() {
 
         PreferenceManager.getDefaultSharedPreferences(this).edit()
             .putBoolean(PREF_KEY_REFRESH_RATE, true).apply()
+
+        TileService.requestListeningState(this,
+                ComponentName(this, RefreshRateTileService::class.java))
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -61,6 +67,8 @@ class RefreshRateService : Service() {
         PreferenceManager.getDefaultSharedPreferences(this).edit()
             .putBoolean(PREF_KEY_REFRESH_RATE, false).apply()
         ServiceState.started = false
+        TileService.requestListeningState(this,
+                ComponentName(this, RefreshRateTileService::class.java))
         super.onDestroy()
     }
 
@@ -101,7 +109,7 @@ class RefreshRateService : Service() {
                         .setAutoCancel(false)
 
         notificationBuilder.addAction(NotificationCompat.Action(null,
-            getString(R.string.stop_service), servicePendingIntent))
+                getString(R.string.stop_service), servicePendingIntent))
 
         return notificationBuilder.build()
     }
