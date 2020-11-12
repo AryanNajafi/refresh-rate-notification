@@ -18,9 +18,6 @@ class MainActivity : AppCompatActivity(), SharedPreferences.OnSharedPreferenceCh
 
         refreshRateSwitch = findViewById(R.id.refresh_rate_switch)
 
-        refreshRateSwitch.isChecked = PreferenceManager.getDefaultSharedPreferences(this)
-                .getBoolean(PREF_KEY_REFRESH_RATE, false)
-
         refreshRateSwitch.setOnCheckedChangeListener(onCheckedChangeListener)
     }
 
@@ -28,6 +25,11 @@ class MainActivity : AppCompatActivity(), SharedPreferences.OnSharedPreferenceCh
         super.onStart()
         PreferenceManager.getDefaultSharedPreferences(this)
                 .registerOnSharedPreferenceChangeListener(this)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        refreshRateSwitch.isChecked = RefreshRateService.ServiceState.started
     }
 
     override fun onStop() {
@@ -38,10 +40,7 @@ class MainActivity : AppCompatActivity(), SharedPreferences.OnSharedPreferenceCh
 
     override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences?, key: String?) {
         if (key == PREF_KEY_REFRESH_RATE) {
-            refreshRateSwitch.setOnCheckedChangeListener(null)
-            refreshRateSwitch.isChecked =
-                    sharedPreferences!!.getBoolean(PREF_KEY_REFRESH_RATE, false)
-            refreshRateSwitch.setOnCheckedChangeListener(onCheckedChangeListener)
+            updateSwitchCheckState(sharedPreferences!!.getBoolean(PREF_KEY_REFRESH_RATE, false))
         }
     }
 
@@ -52,5 +51,11 @@ class MainActivity : AppCompatActivity(), SharedPreferences.OnSharedPreferenceCh
         } else {
             stopService(serviceIntent)
         }
+    }
+
+    private fun updateSwitchCheckState(checked: Boolean) {
+        refreshRateSwitch.setOnCheckedChangeListener(null)
+        refreshRateSwitch.isChecked = checked
+        refreshRateSwitch.setOnCheckedChangeListener(onCheckedChangeListener)
     }
 }

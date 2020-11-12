@@ -39,6 +39,8 @@ class RefreshRateService : Service() {
 
         startForeground(NOTIFICATION_ID, makeNotification())
 
+        ServiceState.started = true
+
         PreferenceManager.getDefaultSharedPreferences(this).edit()
             .putBoolean(PREF_KEY_REFRESH_RATE, true).apply()
     }
@@ -58,6 +60,7 @@ class RefreshRateService : Service() {
         displayManager.unregisterDisplayListener(displayListener)
         PreferenceManager.getDefaultSharedPreferences(this).edit()
             .putBoolean(PREF_KEY_REFRESH_RATE, false).apply()
+        ServiceState.started = false
         super.onDestroy()
     }
 
@@ -103,4 +106,7 @@ class RefreshRateService : Service() {
         return notificationBuilder.build()
     }
 
+    object ServiceState {
+        var started: Boolean = false
+    }
 }
