@@ -23,7 +23,7 @@ class RefreshRateTileService : TileService() {
         if (serviceStarted) {
             stopService(serviceIntent)
         } else {
-            startService(serviceIntent)
+            startForegroundService(serviceIntent)
         }
     }
 }

@@ -47,7 +47,7 @@ class MainActivity : AppCompatActivity(), SharedPreferences.OnSharedPreferenceCh
     private val onCheckedChangeListener: (CompoundButton, Boolean) -> Unit = { _, checked ->
         val serviceIntent = Intent(this, RefreshRateService::class.java)
         if (checked) {
-            startService(serviceIntent)
+            startForegroundService(serviceIntent)
         } else {
             stopService(serviceIntent)
         }
