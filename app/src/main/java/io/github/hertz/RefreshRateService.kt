@@ -86,6 +86,7 @@ class RefreshRateService : LifecycleService() {
             90 -> R.drawable.ic_refresh_rate_90
             120 -> R.drawable.ic_refresh_rate_120
             144 -> R.drawable.ic_refresh_rate_144
+            160 -> R.drawable.ic_refresh_rate_160
             else -> 0
         }
 

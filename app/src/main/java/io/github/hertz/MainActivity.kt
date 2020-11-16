@@ -39,6 +39,7 @@ class MainActivity : AppCompatActivity(), SharedPreferences.OnSharedPreferenceCh
                     90 -> R.drawable.ic_refresh_rate_90
                     120 -> R.drawable.ic_refresh_rate_120
                     144 -> R.drawable.ic_refresh_rate_144
+                    160 -> R.drawable.ic_refresh_rate_160
                     else -> 0
                 })
             })
@@ -63,7 +64,8 @@ class MainActivity : AppCompatActivity(), SharedPreferences.OnSharedPreferenceCh
 
     override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences?, key: String?) {
         if (key == PREF_KEY_REFRESH_RATE) {
-            updateSwitchCheckState(sharedPreferences!!.getBoolean(PREF_KEY_REFRESH_RATE, false))
+            updateSwitchCheckState(sharedPreferences!!
+                .getBoolean(PREF_KEY_REFRESH_RATE, false))
         }
     }
 
