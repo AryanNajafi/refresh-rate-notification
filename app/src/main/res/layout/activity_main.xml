@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
     tools:context=".MainActivity">
 
     <com.google.android.material.switchmaterial.SwitchMaterial
@@ -12,4 +13,24 @@
         android:layout_height="wrap_content"
         android:layout_margin="16dp"
         android:text="@string/refresh_rate_switch_title"/>
+
+    <FrameLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="30dp"
+        android:layout_gravity="center_horizontal">
+        <ImageView
+            android:layout_width="120dp"
+            android:layout_height="120dp"
+            app:tint="?attr/colorControlNormal"
+            app:srcCompat="@drawable/ic_display" />
+        <ImageView
+            android:id="@+id/refresh_rate_value"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            app:tint="?attr/colorControlNormal"
+            app:srcCompat="@drawable/ic_refresh_rate_120"/>
+    </FrameLayout>
+
 </LinearLayout>

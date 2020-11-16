@@ -1,46 +1,47 @@
 package io.github.hertz
 
-import android.app.*
+import android.app.Notification
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.hardware.display.DisplayManager
-import android.os.Build
 import android.os.IBinder
 import android.service.quicksettings.TileService
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import androidx.lifecycle.LifecycleService
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.asLiveData
 import androidx.preference.PreferenceManager
-import kotlin.math.roundToInt
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 
-
-const val NOTIFICATION_ID = 9000;
-const val CHANNEL_ID = "rr_channel"
-
-class RefreshRateService : Service() {
+class RefreshRateService : LifecycleService() {
 
     lateinit var displayManager: DisplayManager
     lateinit var notificationManager: NotificationManagerCompat
+    lateinit var refreshRateLiveData: LiveData<Int>
 
-    var refreshRate: Int = 0
-
+    @ExperimentalCoroutinesApi
     override fun onCreate() {
         super.onCreate()
 
         displayManager = getSystemService(Context.DISPLAY_SERVICE) as DisplayManager
         notificationManager = NotificationManagerCompat.from(this)
 
-        refreshRate = displayManager.displays[0].refreshRate.roundToInt()
+        refreshRateLiveData = displayManager.refreshRateFlow().asLiveData()
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val notificationChannel = NotificationChannel(CHANNEL_ID, "RefreshRate",
-                    NotificationManager.IMPORTANCE_DEFAULT)
-            notificationManager.createNotificationChannel(notificationChannel)
-        }
+        val notificationChannel = NotificationChannel(CHANNEL_ID, "RefreshRate",
+            NotificationManager.IMPORTANCE_DEFAULT)
+        notificationManager.createNotificationChannel(notificationChannel)
 
-        displayManager.registerDisplayListener(displayListener, null)
+        startForeground(NOTIFICATION_ID, makeNotification(0))
 
-        startForeground(NOTIFICATION_ID, makeNotification())
+        refreshRateLiveData.observe(this, { refreshRate ->
+            notificationManager.notify(NOTIFICATION_ID, makeNotification(refreshRate))
+        })
 
         ServiceState.started = true
 
@@ -52,18 +53,19 @@ class RefreshRateService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        super.onStartCommand(intent, flags, startId)
         if (intent?.getBooleanExtra(INTENT_EXTRA_NOTIFICATION_ACTION, false)!!) {
             stopSelf()
         }
         return START_NOT_STICKY;
     }
 
-    override fun onBind(p0: Intent?): IBinder? {
+    override fun onBind(intent: Intent): IBinder? {
+        super.onBind(intent)
         return null
     }
 
     override fun onDestroy() {
-        displayManager.unregisterDisplayListener(displayListener)
         PreferenceManager.getDefaultSharedPreferences(this).edit()
             .putBoolean(PREF_KEY_REFRESH_RATE, false).apply()
         ServiceState.started = false
@@ -72,20 +74,7 @@ class RefreshRateService : Service() {
         super.onDestroy()
     }
 
-    private val displayListener = object : DisplayManager.DisplayListener {
-        override fun onDisplayAdded(p0: Int) {
-        }
-
-        override fun onDisplayChanged(displayId: Int) {
-            refreshRate = displayManager.getDisplay(displayId).refreshRate.roundToInt()
-            notificationManager.notify(NOTIFICATION_ID, makeNotification())
-        }
-
-        override fun onDisplayRemoved(p0: Int) {
-        }
-    }
-
-    private fun makeNotification(): Notification {
+    private fun makeNotification(refreshRate: Int): Notification {
         val serviceIntent = Intent(this, RefreshRateService::class.java)
         serviceIntent.putExtra(INTENT_EXTRA_NOTIFICATION_ACTION, true);
 

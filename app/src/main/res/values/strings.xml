@@ -3,5 +3,5 @@
 
     <string name="stop_service">Turn off</string>
 
-    <string name="refresh_rate_switch_title">Show display refresh rate</string>
+    <string name="refresh_rate_switch_title">Show display refresh rate notification</string>
 </resources>
