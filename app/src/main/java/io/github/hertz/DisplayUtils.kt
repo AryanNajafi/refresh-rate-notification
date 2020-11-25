@@ -16,7 +16,9 @@ fun DisplayManager.refreshRateFlow() = callbackFlow {
         }
 
         override fun onDisplayChanged(displayId: Int) {
-            offer(getDisplay(displayId).refreshRate.roundToInt())
+            getDisplay(displayId)?.let { display ->
+                offer(display.refreshRate.roundToInt())
+            }
         }
     }
     registerDisplayListener(displayListener, null)
