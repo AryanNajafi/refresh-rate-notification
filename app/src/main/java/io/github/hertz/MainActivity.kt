@@ -6,7 +6,7 @@ import android.content.SharedPreferences
 import android.hardware.display.DisplayManager
 import android.os.Bundle
 import android.widget.CompoundButton
-import android.widget.ImageView
+import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.asLiveData
 import androidx.preference.PreferenceManager
@@ -29,19 +29,12 @@ class MainActivity : AppCompatActivity(), SharedPreferences.OnSharedPreferenceCh
         val displayManager =
             getSystemService(Context.DISPLAY_SERVICE) as DisplayManager
 
-        val refreshRateView: ImageView = findViewById(R.id.refresh_rate_value)
+        val refreshRateView: TextView = findViewById(R.id.refresh_rate_value)
 
         displayManager.refreshRateFlow()
             .asLiveData()
             .observe(this, { refreshRate ->
-                refreshRateView.setImageResource(when (refreshRate) {
-                    60 -> R.drawable.ic_refresh_rate_60
-                    90 -> R.drawable.ic_refresh_rate_90
-                    120 -> R.drawable.ic_refresh_rate_120
-                    144 -> R.drawable.ic_refresh_rate_144
-                    160 -> R.drawable.ic_refresh_rate_160
-                    else -> 0
-                })
+                refreshRateView.text = refreshRate.toString()
             })
     }
 

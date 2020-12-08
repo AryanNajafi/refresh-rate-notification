@@ -7,11 +7,18 @@ import android.app.PendingIntent
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.Paint
 import android.hardware.display.DisplayManager
 import android.os.IBinder
 import android.service.quicksettings.TileService
+import android.text.TextPaint
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.res.ResourcesCompat
+import androidx.core.graphics.drawable.IconCompat
 import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.asLiveData
@@ -24,6 +31,9 @@ class RefreshRateService : LifecycleService() {
     lateinit var notificationManager: NotificationManagerCompat
     lateinit var refreshRateLiveData: LiveData<Int>
 
+    private val iconMap = HashMap<Int, IconCompat>()
+    private val textPaint = TextPaint(Paint.ANTI_ALIAS_FLAG)
+
     @ExperimentalCoroutinesApi
     override fun onCreate() {
         super.onCreate()
@@ -33,9 +43,21 @@ class RefreshRateService : LifecycleService() {
 
         refreshRateLiveData = displayManager.refreshRateFlow().asLiveData()
 
-        val notificationChannel = NotificationChannel(CHANNEL_ID, "RefreshRate",
-            NotificationManager.IMPORTANCE_DEFAULT)
+        val notificationChannel = NotificationChannel(
+            CHANNEL_ID, "RefreshRate",
+            NotificationManager.IMPORTANCE_DEFAULT
+        )
         notificationManager.createNotificationChannel(notificationChannel)
+
+        textPaint.color = Color.WHITE
+        textPaint.typeface = ResourcesCompat.getFont(this, R.font.digits)
+        textPaint.textSize = 16 * resources.displayMetrics.density
+        textPaint.letterSpacing = .05f
+
+        displayManager.displays[0].supportedModes.forEach { mode ->
+            iconMap[mode.refreshRate.toInt()] =
+                createSmallIcon(mode.refreshRate.toInt().toString())
+        }
 
         startForeground(NOTIFICATION_ID, makeNotification(0))
 
@@ -81,20 +103,11 @@ class RefreshRateService : LifecycleService() {
         val servicePendingIntent = PendingIntent.getService(this,
                 0, serviceIntent, PendingIntent.FLAG_UPDATE_CURRENT)
 
-        val smallIconId : Int = when (refreshRate) {
-            60 -> R.drawable.ic_refresh_rate_60
-            90 -> R.drawable.ic_refresh_rate_90
-            120 -> R.drawable.ic_refresh_rate_120
-            144 -> R.drawable.ic_refresh_rate_144
-            160 -> R.drawable.ic_refresh_rate_160
-            else -> 0
-        }
-
-        val notificationBuilder=
+        val notificationBuilder =
                 NotificationCompat.Builder(this, CHANNEL_ID)
-                        .setSmallIcon(smallIconId)
+                        .setSmallIcon(iconMap[refreshRate] ?: createSmallIcon("0"))
                         .setPriority(NotificationCompat.PRIORITY_HIGH)
-                        .setNotificationSilent()
+                        .setSilent(true)
                         .setOngoing(true)
                         .setAutoCancel(false)
 
@@ -102,6 +115,18 @@ class RefreshRateService : LifecycleService() {
                 getString(R.string.stop_service), servicePendingIntent))
 
         return notificationBuilder.build()
+    }
+
+    private fun createSmallIcon(value: String): IconCompat {
+        val width = textPaint.measureText(value)
+        val height = -textPaint.ascent() + textPaint.descent()
+
+        val bitmap = Bitmap.createBitmap(width.toInt(), height.toInt(), Bitmap.Config.ARGB_8888)
+
+        val canvas = Canvas(bitmap)
+        canvas.drawText(value, 0f, height, textPaint)
+
+        return IconCompat.createWithBitmap(bitmap)
     }
 
     object ServiceState {

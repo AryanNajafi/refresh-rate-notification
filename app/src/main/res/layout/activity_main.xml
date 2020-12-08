@@ -24,13 +24,14 @@
             android:layout_height="120dp"
             app:tint="?attr/colorControlNormal"
             app:srcCompat="@drawable/ic_display" />
-        <ImageView
+        <TextView
             android:id="@+id/refresh_rate_value"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            app:tint="?attr/colorControlNormal"
-            app:srcCompat="@drawable/ic_refresh_rate_120"/>
+            android:fontFamily="@font/digits"
+            android:textSize="36sp"
+            android:letterSpacing=".05"/>
     </FrameLayout>
 
 </LinearLayout>
