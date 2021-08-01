@@ -54,11 +54,6 @@ class RefreshRateService : LifecycleService() {
         textPaint.textSize = 16 * resources.displayMetrics.density
         textPaint.letterSpacing = .05f
 
-        displayManager.displays[0].supportedModes.forEach { mode ->
-            iconMap[mode.refreshRate.toInt()] =
-                createSmallIcon(mode.refreshRate.toInt().toString())
-        }
-
         startForeground(NOTIFICATION_ID, makeNotification(0))
 
         refreshRateLiveData.observe(this, { refreshRate ->
@@ -105,7 +100,7 @@ class RefreshRateService : LifecycleService() {
 
         val notificationBuilder =
                 NotificationCompat.Builder(this, CHANNEL_ID)
-                        .setSmallIcon(iconMap[refreshRate] ?: createSmallIcon("0"))
+                        .setSmallIcon(getSmallIcon(refreshRate))
                         .setPriority(NotificationCompat.PRIORITY_HIGH)
                         .setSilent(true)
                         .setOngoing(true)
@@ -127,6 +122,13 @@ class RefreshRateService : LifecycleService() {
         canvas.drawText(value, 0f, height, textPaint)
 
         return IconCompat.createWithBitmap(bitmap)
+    }
+
+    private fun getSmallIcon(value: Int): IconCompat {
+        if (!iconMap.containsKey(value)) {
+            iconMap[value] = createSmallIcon(value.toString())
+        }
+        return iconMap[value] ?: createSmallIcon("0")
     }
 
     object ServiceState {
